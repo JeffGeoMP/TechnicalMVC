@@ -12,6 +12,6 @@ namespace TechnicalMVC.Models.Entities
         [Required]
         public string Name { get; set; }
 
-        public string Discriminator { get; set; }
+        public string? Discriminator { get; set; }
     }
 }

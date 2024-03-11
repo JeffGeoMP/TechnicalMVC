@@ -1,0 +1,92 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+}
+
+<div>
+
+    <div class="card">
+        <div class="card-header">
+            <h4 class="card-title">Productos</h4>
+        </div>
+        <div class="card-body">
+            <button type="button" class="btn btn-outline-primary" onclick="addProduct()"><i class="fas fa-plus-circle"></i> Agregar Producto</button>
+        </div>
+        <div class="card-body">
+            <table class="table table-hover table-responsive">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Categoria</th>
+                        <th>SKU</th>
+                        <th>Description</th>
+                        <th>Price</th>
+                        <th></th>
+                    </tr>
+                </thead>
+            </table>
+        </div>
+    </div>
+</div>
+
+
+<script src="~/lib/jquery/dist/jquery.min.js"></script>
+<script src="~/lib/notiflix/dist/notiflix-3.2.7.min.js"></script>
+<script>
+    Notiflix.Loading.pulse('Cargando Productos');
+
+    $(document).ready(function () {
+        $.ajax({
+            url: '@ViewBag.ApplicationURL/product/getallproducts',
+            type: 'GET',
+            dataType: 'json',
+            success: function (data) {
+                var html = '<tbody>';
+                for (var i = 0; i < data.length; i++) {
+                    html += '<tr>';
+                    html += '<td>' + data[i].category.name + '</td>';
+                    html += '<td>' + data[i].sku + '</td>';
+                    html += '<td>' + data[i].description + '</td>';
+                    html += '<td>Q ' + parseFloat(data[i].price).toFixed(2) + '</td>';
+                    html += '<td> <a class="me-3" href="#" onclick=editProduct(' + data[i].id + ')><i class="fas fa-pen"></i></a>'
+                    html += '     <a href="#" onclick=removeProduct(' + data[i].id + ')><i class="fas fa-trash"></i></a></td>'
+                    html += '</tr>';
+                }
+                html += '</tbody>';
+                $('.table').append(html);
+            },
+            complete: function () {
+                Notiflix.Loading.remove();
+            }
+        });
+    });
+
+    function addProduct() {
+        window.location.href = '@ViewBag.ApplicationURL/Product/AddProduct';
+    }
+
+    function editProduct(productId) {
+        window.location.href = '@ViewBag.ApplicationURL/Product/EditProduct?productId=' + id;
+    }
+
+    function removeProduct(productId){
+        Notiflix.Loading.pulse('Borrando Producto');
+
+        $.ajax({
+            url: "@ViewBag.ApplicationURL/product/DeleteProduct?productId=" + productId,
+            type: 'POST',
+            success: function (data) {
+                Notiflix.Loading.remove();
+                Notiflix.Report.success('Producto Eliminado', 'El producto ha sido eliminado correctamente', 'Aceptar');
+                setTimeout(function () {
+                    location.reload();
+                }, 2000);
+            },
+            error: function (error) {
+                Notiflix.Loading.remove();
+                Notiflix.Report.failure('Error', 'Ha ocurrido un error al eliminar el producto', 'Aceptar');
+            }
+        });
+    }
+
+</script>

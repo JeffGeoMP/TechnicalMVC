@@ -12,20 +12,15 @@ namespace TechnicalMVC.Controllers
     public class ClientController : Controller
     {
         private readonly ApplicationDbContext _context;
-        private readonly IConfiguration _configuration;
 
-        public ClientController(ApplicationDbContext context, IConfiguration configuration)
+        public ClientController(ApplicationDbContext context)
         {
             _context = context;
-            _configuration = configuration;
         }
 
         [HttpGet]
-        public IActionResult GetClients()
+        public IActionResult ListClient()
         {
-            var applicationURL = _configuration.GetSection("Url").Value;
-            ViewBag.ApplicationURL = applicationURL;
-
             return View();
         }
 

@@ -22,6 +22,6 @@ namespace TechnicalMVC.Models.Entities
         public decimal Total { get; set; }
 
         [Column(TypeName = "decimal(18,2)")]
-        public decimal Discount { get; set; }
+        public decimal? Discount { get; set; }
     }
 }
