@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace TechnicalMVC.Models.Entities
 {
-    public class Client : AttributesLog
+    public class FamilyProducts : AttributesLog
     {
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         [Key]
@@ -12,13 +12,6 @@ namespace TechnicalMVC.Models.Entities
         [Required]
         public string Name { get; set; }
 
-        [Required]
-        public string DPI { get; set; }
-
-        [Required]
-        public string NIT { get; set; }
-
-        [Required]
-        public string Address { get; set; }
+        public string Discriminator { get; set; }
     }
 }

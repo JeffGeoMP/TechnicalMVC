@@ -3,22 +3,26 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace TechnicalMVC.Models.Entities
 {
-    public class Client : AttributesLog
+    public class Product : AttributesLog
     {
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         [Key]
         public int Id { get; set; }
 
         [Required]
-        public string Name { get; set; }
+        public string SKU { get; set; }
 
         [Required]
-        public string DPI { get; set; }
+        public string Description { get; set; }
 
         [Required]
-        public string NIT { get; set; }
+        public FamilyProducts FamilyProduct { get; set; }
 
         [Required]
-        public string Address { get; set; }
+        public int FamilyProductId { get; set; }
+
+        [Column(TypeName = "decimal(18,2)")]
+        [Required]
+        public decimal Price { get; set; }
     }
 }

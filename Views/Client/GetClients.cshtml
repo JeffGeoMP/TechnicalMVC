@@ -1,0 +1,93 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+}
+
+<div>
+
+    <div class="card" >
+        <div class="card-header">
+            <h4 class="card-title">Clientes</h4>
+        </div>
+        <div class="card-body">
+            <button type="button" class="btn btn-outline-primary" onclick="addUser()"><i class="fas fa-user-plus"></i></button>
+        </div>
+        <div class="card-body">
+            <table class="table table-hover table-responsive">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Nombre</th>
+                        <th>DPI</th>
+                        <th>NIT</th>
+                        <th>Dirección</th>
+                        <th></th>
+                    </tr>
+                </thead>
+            </table>
+        </div>
+    </div>    
+</div>
+
+
+<script src="~/lib/jquery/dist/jquery.min.js"></script>
+<script src="~/lib/notiflix/dist/notiflix-3.2.7.min.js"></script>
+<script>
+    Notiflix.Loading.pulse('Cargando Clientes');
+
+    $(document).ready(function () {
+        $.ajax({
+            url: '@ViewBag.ApplicationURL/client/getallclients',
+            type: 'GET',
+            dataType: 'json',
+            success: function (data) {
+                var html = '<tbody>';
+                for (var i = 0; i < data.length; i++) {
+                    html += '<tr>';
+                    html += '<td>' + data[i].name + '</td>';
+                    html += '<td>' + data[i].dpi + '</td>';
+                    html += '<td>' + data[i].nit + '</td>';
+                    html += '<td>' + data[i].address + '</td>';
+                    html += '<td> <a class="me-3" href="#" onclick=editClient(' + data[i].id + ')><i class="fas fa-user-edit"></i></a>'
+                    html += '     <a href="#" onclick=removeClient(' + data[i].id + ')><i class="fas fa-user-times"></i></a></td>'
+                    html += '</tr>';
+                }
+                html += '</tbody>';
+                $('.table').append(html);
+            },
+            complete: function () {
+                Notiflix.Loading.remove();
+            }
+        });
+    });
+
+    function addUser() {
+        window.location.href = '@ViewBag.ApplicationURL/Client/AddClient';
+    }
+
+    function editClient(clientId) {
+        window.location.href = '@ViewBag.ApplicationURL/Client/EditClient?clientId=' + clientId;
+    }
+
+    function removeClient(clientId){
+        Notiflix.Loading.pulse('Borrando Cliente');
+        
+        $.ajax({
+            url: "@ViewBag.ApplicationURL/Client/DeleteClient?clientId=" + clientId,
+            type: 'POST',
+            success: function (data) {
+                Notiflix.Loading.remove();
+                Notiflix.Report.success('Cliente Eliminado', 'El cliente ha sido eliminado correctamente', 'Aceptar');
+                setTimeout(function () {
+                    location.reload();
+                }, 2000);
+            },
+            error: function (error) {
+                Notiflix.Loading.remove();
+                Notiflix.Report.failure('Error', 'Ha ocurrido un error al eliminar el cliente <' + error + '>', 'Aceptar');
+            }
+        });
+    }
+
+
+</script>

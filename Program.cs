@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using TechnicalMVC.Data;
 
 var builder = WebApplication.CreateBuilder(args);

@@ -1,0 +1,94 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+    @model TechnicalMVC.Models.Entities.Client;
+
+}
+
+<div>
+    <div class="card col-md-5 offset-md-3">
+        <div class="card-header">
+            <h4 class="card-title">Agregar Cliente</h4>
+        </div>
+        <div class="card-body">
+            <form id="client-form">
+                <div class="row mb-3">
+                    <label for="input-name-client" class="col-md-4 col-form-label">Ingrese el Nombre del Cliente: </label>
+                    <div class="col-md-8">
+                        <input id="input-name-client" type="text" class="form-control" placeholder="Nombre" asp-for="Name" required>
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <label for="input-dpi-client" class="col-md-4 col-form-label">Ingrese el DPI del Cliente: </label>
+                    <div class="col-md-8">
+                        <input id="input-dpi-client" type="number" class="form-control" placeholder="DPI"  asp-for="DPI" required>
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <label for="input-nit-client" class="col-md-4 col-form-label">Ingrese el NIT del Cliente: </label>
+                    <div class="col-md-8">
+                        <input id="input-nit-client" type="text" class="form-control" placeholder="NIT" asp-for="NIT" required>
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <label for="input-address-client" class="col-md-4 col-form-label">Ingrese la Dirección del Cliente: </label>
+                    <div class="col-md-8">
+                        <input id="input-address-client" type="text" class="form-control" placeholder="Dirección" asp-for="Address" required>
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-12">
+                        <button type="submit" class="btn btn-outline-primary"><i class="fas fa-save"></i> Guardar</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script src="~/lib/jquery/dist/jquery.min.js"></script>
+<script src="~/lib/notiflix/dist/notiflix-3.2.7.min.js"></script>
+
+<script>
+
+    $(document).ready(function () {
+        $('#client-form').submit(saveClient);
+    });
+
+    function saveClient(event) {
+
+        event.preventDefault();
+
+        var client = {
+            Id : @Model.Id,
+            Name: $('#input-name-client').val(),
+            DPI: $('#input-dpi-client').val(),
+            NIT: $('#input-nit-client').val(),
+            Address: $('#input-address-client').val()
+        };
+
+        Notiflix.Loading.pulse('Actualizando Cliente');
+
+        $.ajax({
+            url: '@ViewBag.ApplicationURL/Client/EditClient',
+            type: 'PUT',
+            contentType: 'application/json',
+            data: JSON.stringify(client),
+            success: function () {
+                Notiflix.Loading.remove();
+                Notiflix.Report.success('Cliente Actualizado', 'El cliente ha sido actualizado exitosamente.');
+
+                setTimeout(function () {
+                    window.location.href = '@ViewBag.ApplicationURL/Client/GetClients';
+                }, 2000);
+            },
+            error: function (error) {
+                console.log(error);
+                Notiflix.Loading.remove();
+                Notiflix.Report.failure('Error', 'Error al actualizar el cliente');
+            },
+        });
+    }
+</script>
