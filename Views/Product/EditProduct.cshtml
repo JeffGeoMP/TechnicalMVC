@@ -1,0 +1,181 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+    @model TechnicalMVC.Models.Product.ProductViewModel;
+
+}
+
+<div>
+    <div class="card col-md-5 offset-md-3">
+        <div class="card-header">
+            <h4 class="card-title">Agregar Producto</h4>
+        </div>
+        <div class="card-body">
+            <form id="form-edit-product">
+                <div class="row mb-3">
+                    <label for="input-family-product" class="col-md-4 col-form-label">Ingrese la categoría del producto: </label>
+                    <div class="col-md-6">
+                        <select class="form-select" id="select-family-product" required>
+                            <option selected>Elegir Categoria</option>
+                        </select>
+                    </div>
+                    <div class="col-md-1">
+                        <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#new-category" data-bs-whatever="mdo"><i class="fas fa-plus"></i></button>
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <label for="input-sku-product" class="col-md-4 col-form-label">Ingrese el correlativo del producto: </label>
+                    <div class="col-md-8">
+                        <input id="input-sku-product" type="number" class="form-control" placeholder="Numero de Correlativo" asp-for="SKU"  required>
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <label for="input-description-product" class="col-md-4 col-form-label">Ingrese la descripcion del producto: </label>
+                    <div class="col-md-8">
+                        <input id="input-description-product" type="text" class="form-control" placeholder="Descripción" asp-for="Description" required>
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <label for="input-price-product" class="col-md-4 col-form-label">Ingrese el precio del producto: </label>
+                    <div class="col-md-8">
+                        <input id="input-price-product" type="number" step="any" class="form-control" placeholder="Precio" asp-for="Price" required>
+                    </div>
+                </div>
+
+                <div class="row mb-3 d-flex justify-content-center">
+                    <div class="col-md-12">
+                        <button type="submit" class="btn btn-outline-primary"><i class="fas fa-save"></i> Guardar</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="new-category" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Agregar Categoría</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="form-new-category">
+                    <div class="mb-3">
+                        <label for="category-new-name" class="col-form-label">Categoria:</label>
+                        <input type="text" class="form-control" id="category-new-name" placeholder="Ingrese el nombre de la categoría" required>
+                    </div>
+                    <div class="mb-3 d-flex justify-content-center">
+                        <button type="submit" class="btn btn-outline-primary btn-sm" data-bs-dismiss="modal">Agregar Categoría</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="~/lib/jquery/dist/jquery.min.js"></script>
+<script src="~/lib/notiflix/dist/notiflix-3.2.7.min.js"></script>
+
+<script>
+    categoryList();
+
+    $(document).ready(function () {
+        $('#form-edit-product').submit(editProduct);
+    });
+
+    $(document).ready(function () {
+        $('#form-new-category').submit(addCategory);
+    });
+
+    function categoryList(){
+        $(document).ready(function () {
+            $.ajax({
+                url: '@ViewBag.ApplicationURL/product/GetFamilyProducts',
+                type: 'GET',
+                dataType: 'json',
+                success: function (data) {
+                    $.each(data, function (index, item) {
+                        if(item.id == @Model.Category.Id){
+                            $('#select-family-product').append($('<option>', {
+                                value: item.id,
+                                text: item.name,
+                                selected: true
+                            }));
+                        }else{
+                            $('#select-family-product').append($('<option>', {
+                                value: item.id,
+                                text: item.name
+                            }));
+                        }
+                    });
+                },
+            });
+        });
+    }
+    
+    function addCategory(event){
+        event.preventDefault();
+        var category = {
+            name: $('#category-new-name').val()
+        };
+
+        Notiflix.Loading.pulse('Agregando Categoría');
+
+        $.ajax({
+            url: '@ViewBag.ApplicationURL/product/AddFamilyProduct',
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify(category),
+            success: function () {
+                Notiflix.Loading.remove();
+                Notiflix.Notify.success('Categoría Agregada');
+                $('#select-family-product').empty();
+                categoryList();
+            },
+            error: function(error){
+                console.log(error);
+                Notiflix.Loading.remove();
+                Notiflix.Notify.failure('No se creo la categoría');
+            }
+        });
+    }
+
+    function editProduct(event){
+        event.preventDefault();
+        
+        var product = {
+            id: @Model.Id,
+            sku: $('#input-sku-product').val(),
+            description: $('#input-description-product').val(),
+            price: $('#input-price-product').val(),
+            category : {
+                id: $('#select-family-product').val()
+            },
+        };
+
+        Notiflix.Loading.pulse('Editando Producto');
+
+        $.ajax({
+            url: '@ViewBag.ApplicationURL/product/EditProduct',
+            type: 'PUT',
+            contentType: 'application/json',
+            data: JSON.stringify(product),
+            success: function () {
+                Notiflix.Loading.remove();
+                Notiflix.Report.success('Producto', 'Producto editado exitosamente', 'Aceptar');
+                
+                setTimeout(function () {
+                    window.location.href = '@ViewBag.ApplicationURL/product/ListProduct';
+                }, 2000);
+            },
+            error: function (error) {
+                console.log(error);
+                Notiflix.Loading.remove();
+                Notiflix.Report.failure('Error', 'No se edito el producto', 'Aceptar');
+            }
+        });
+    }
+
+</script>

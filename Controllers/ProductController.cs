@@ -27,6 +27,27 @@ namespace TechnicalMVC.Controllers
             return View();
         }
 
+        [HttpGet]
+        public async Task<IActionResult> EditProduct(int productId)
+        {
+            var product = await _context.Products.Include(p => p.FamilyProduct).Where(x => x.Id == productId).FirstOrDefaultAsync();
+
+            var model = new ProductViewModel
+            {
+                Id = product.Id,
+                SKU = product.SKU.Replace("SKU", ""),
+                Description = product.Description,
+                Price = Math.Round(product.Price, 2),
+                Category = new CategoryViewModel
+                {
+                    Id = product.FamilyProductId,
+                    Name = product.FamilyProduct.Name
+                }
+            };
+
+            return View(model);
+        }
+
         /// <summary>
         /// Get for all products.
         /// </summary>
@@ -97,6 +118,7 @@ namespace TechnicalMVC.Controllers
         /// </summary>
         /// <param name="product"></param>
         /// <returns></returns>
+        [HttpPost]
         public async Task<IActionResult> AddProduct([FromBody] ProductViewModel product)
         {
             try
@@ -116,18 +138,40 @@ namespace TechnicalMVC.Controllers
             {
                 return BadRequest(e.Message);
             }
-        }   
+        }
 
         /// <summary>
         /// Delete product.
         /// </summary>
         /// <param name="productId"></param>
         /// <returns></returns>
+        [HttpPost]
         public async Task<IActionResult> DeleteProduct(int productId) 
         {
             try
             {
                _context.Products.Remove(await _context.Products.FindAsync(productId));
+                await _context.SaveChangesAsync();
+                return Ok();
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e.Message);
+            }
+        }
+
+        [HttpPut]
+        public async Task<IActionResult> EditProduct([FromBody] ProductViewModel product)
+        {
+            try
+            {
+                var productEntity = await _context.Products.FindAsync(product.Id);
+                productEntity.SKU = "SKU" + product.SKU;
+                productEntity.Description = product.Description;
+                productEntity.FamilyProductId = product.Category.Id;
+                productEntity.Price = product.Price;
+
+                _context.Products.Update(productEntity);
                 await _context.SaveChangesAsync();
                 return Ok();
             }
