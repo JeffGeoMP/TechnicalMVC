@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Numerics;
 using TechnicalMVC.Data;
 using TechnicalMVC.Models.Entities;
 using TechnicalMVC.Models.Product;
@@ -86,6 +87,25 @@ namespace TechnicalMVC.Controllers
                 }).ToListAsync();
 
             return Ok(familyProducts);
+        }
+
+        public async Task<IActionResult> GetProductsByFamily(int categoryId)
+        {
+            var products = await _context.Products.Include(p => p.FamilyProduct).Where(x => x.FamilyProductId == categoryId)
+                .Select(x => new ProductViewModel
+                {
+                    Id = x.Id,
+                    SKU = x.SKU,
+                    Description = x.Description,
+                    Price = Math.Round(x.Price, 2),
+                    Category = new CategoryViewModel
+                    {
+                        Id = x.FamilyProduct.Id,
+                        Name = x.FamilyProduct.Name
+                    }
+                }).ToListAsync();
+
+            return Ok(products);
         }
 
         /// <summary>

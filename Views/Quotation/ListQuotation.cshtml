@@ -1,0 +1,97 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+}
+
+
+<div>
+    <div class="card">
+        <div class="card-header">
+            <h4 class="card-title">Cotizaciones</h4>
+        </div>
+        <div class="card-body">
+            <button type="button" class="btn btn-outline-primary" onclick="addQuotation()"><i class="fas fa-print"></i> Agregar Cotización</button>
+        </div>
+        <div class="card-body">
+            <table class="table table-hover table-responsive">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Serie</th>
+                        <th>Cliente</th>
+                        <th>NIT</th>
+                        <th>Total</th>
+                        <th>Fecha</th>
+                        <th></th>
+                    </tr>
+                </thead>
+            </table>
+        </div>
+    </div>
+</div>
+
+
+<script src="~/lib/jquery/dist/jquery.min.js"></script>
+<script src="~/lib/notiflix/dist/notiflix-3.2.7.min.js"></script>
+<script>
+    Notiflix.Loading.pulse('Cargando Cotizaciones');
+
+    $(document).ready(function () {
+        $.ajax({
+            url: '@ViewBag.ApplicationURL/quotation/GetAllQuotation',
+            type: 'GET',
+            dataType: 'json',
+            success: function (data) {
+                var html = '<tbody>';
+                $.each(data, function (index, q) {
+                    html += '<tr>';
+                    html += '<td>' + q.serie + '</td>';
+                    html += '<td>' + q.client.name + '</td>';
+                    html += '<td>' + q.client.nit + '</td>';
+                    html += '<td>Q ' + parseFloat(q.total).toFixed(2) + '</td>';
+                    html += '<td>' + q.createdAt + '</td>';
+                    html += '<td>';
+                    html += '<a class="me-3" href="#" onclick="editQuotation(' + q.id + ')"><i class="fas fa-pen"></i></a>';
+                    html += '<a href="#" onclick="removeQuotation(' + q.id + ')"><i class="fas fa-trash"></i></a>';
+                    html += '</td>';
+                    html += '</tr>';
+                });
+                html += '</tbody>';
+                $('.table').append(html);
+            },
+            complete: function () {
+                Notiflix.Loading.remove();
+            }
+        });
+    });
+
+    function addQuotation() {
+        window.location.href = '@ViewBag.ApplicationURL/Quotation/AddQuotation';
+    }
+
+    function editQuotation(quotationId) {
+        window.location.href = '@ViewBag.ApplicationURL/quotation/EditQuotation?quotationId=' + quotationId;
+    }
+
+    function removeQuotation(quotationId) {
+        Notiflix.Loading.pulse('Borrando Cotización');
+
+        $.ajax({
+            url: "@ViewBag.ApplicationURL/quotation/RemoveQuotation?quotationId=" + quotationId,
+            type: 'POST',
+            success: function (data) {
+                Notiflix.Loading.remove();
+                Notiflix.Report.success('Cotización Eliminado', 'La Cotización ha sido eliminada correctamente', 'Aceptar');
+                setTimeout(function () {
+                    location.reload();
+                }, 2000);
+            },
+            error: function (error) {
+                Notiflix.Loading.remove();
+                Notiflix.Report.failure('Error', 'Ha ocurrido un error al eliminar la cotización', 'Aceptar');
+            }
+        });
+    }
+
+
+</script>

@@ -1,0 +1,288 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+    @model TechnicalMVC.Models.Quotation.QuotationViewModel;
+
+}
+
+<div>
+    <div class="card col-md-7 offset-md-2">
+        <div class="card-header">
+            <h4 class="card-title">Editar Cotización</h4>
+        </div>
+        <div class="card-body">
+            <form id="form-edit-quotation">
+                <div class="row mb-3">
+                    <label for="select-client-quotation" class="col-md-4 col-form-label">Seleccione el Cliente: </label>
+                    <div class="col-md-8">
+                        <select class="form-select" id="select-client-quotation" required>
+                        </select>
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <label for="input-serie-quotation" class="col-md-4 col-form-label">Ingrese la Serie: </label>
+                    <div class="col-md-8">
+                        <input id="input-serie-quotation" type="text" class="form-control" placeholder="Serie" asp-for="Serie" required>
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <label for="total-quotation" class="col-md-4 col-form-label">Total: </label>
+                    <div class="col-md-8">
+                        <input id="total-quotation" type="text" class="form-control" readonly>
+                    </div>
+                </div>
+                <div class="row mt-5 mb-4" id="quotation-product-table">
+                    <table class="table table-hover table-responsive">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>SKU</th>
+                                <th>Descripción</th>
+                                <th>Precio</th>
+                                <th>Cantidad</th>
+                                <th>Subtotal</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                    </table>
+                </div>
+                <div class="mb-5 d-flex justify-content-around">
+                    <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#new-product-quotation" data-bs-whatever="mdo"><i class="fas fa-plus"></i> Agregar Producto</button>
+                    <button type="submit" class="btn btn-outline-primary"><i class="fas fa-save"></i> Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="new-product-quotation" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Agregar Categoría</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="form-add-product-quotation">
+                    <div class="row mb-3">
+                        <label for="product-quotation-select-category" class="col-md-4 col-form-label">Seleccione la categoría: </label>
+                        <div class="col-md-8">
+                            <select class="form-select" id="product-quotation-select-category" required>
+                                <option selected>Elegir Categoria</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <label for="product-quotation-select-product" class="col-md-4 col-form-label">Seleccione producto: </label>
+                        <div class="col-md-8">
+                            <select class="form-select" id="product-quotation-select-product" required>
+                                <option selected>Elegir Producto</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <label for="product-quotation-qty" class="col-md-4 col-form-label">Cantidad: </label>
+                        <div class="col-md-4">
+                            <input type="number" class="form-control" id="product-quotation-qty" required>
+                        </div>
+                    </div>
+                    <div class="mb-3 d-flex justify-content-center">
+                        <button type="submit" class="btn btn-outline-primary" data-bs-dismiss="modal">Agregar Producto</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="~/lib/jquery/dist/jquery.min.js"></script>
+<script src="~/lib/notiflix/dist/notiflix-3.2.7.min.js"></script>
+
+<script>
+    let productQuotation = [];
+    loadData();
+
+    function loadData(){
+        Notiflix.Loading.pulse('Cargando Información');
+        getClientOptions();
+        getCategoryOptions();
+        fillData();
+        Notiflix.Loading.remove();
+    }
+
+    function getClientOptions() {
+        $(document).ready(function () {
+            $.ajax({
+                url: '@ViewBag.ApplicationURL/client/getallclients',
+                type: 'GET',
+                dataType: 'json',
+                success: function (data) {
+                    $.each(data, function (index, item) {
+                        if(item.id === @Model.Client.Id){
+                            $('#select-client-quotation').append($('<option>', {
+                                value: item.id,
+                                text: item.name,
+                                selected: true
+                            }));
+                        }else{
+                            $('#select-client-quotation').append($('<option>', {
+                                value: item.id,
+                                text: item.name
+                            }));
+                        }
+                    });
+                },
+            });
+        });
+    }
+
+    function getCategoryOptions() {
+        $(document).ready(function () {
+            $.ajax({
+                url: '@ViewBag.ApplicationURL/product/GetFamilyProducts',
+                type: 'GET',
+                dataType: 'json',
+                success: function (data) {
+                    $.each(data, function (index, item) {
+                        $('#product-quotation-select-category').append($('<option>', {
+                            value: item.id,
+                            text: item.name
+                        }));
+                    });
+                },
+            });
+        });
+    }
+
+    function getProductByCategory(categoryId) {
+        $(document).ready(function () {
+            $.ajax({
+                url: '@ViewBag.ApplicationURL/product/GetProductsByFamily?categoryId=' + categoryId,
+                type: 'GET',
+                dataType: 'json',
+                success: function (data) {
+                    $('#product-quotation-select-product').empty();
+                    $.each(data, function (index, item) {
+                        $('#product-quotation-select-product').append($('<option>', {
+                            value: item.id,
+                            text: item.description
+                        }));
+                    });
+                },
+            });
+        });
+    }
+
+    $("#product-quotation-select-category").change(function () {
+        var selectedCategoryId = $(this).val();
+        getProductByCategory(selectedCategoryId);
+    });
+
+    $(document).ready(function () {
+        $('#form-add-product-quotation').submit(addProductQuotation);
+        $('#form-edit-quotation').submit(editQuotation);
+    });
+
+    function addProductQuotation(event) {
+        event.preventDefault();
+
+        var productId = $('#product-quotation-select-product').val();
+        var qty = $('#product-quotation-qty').val();
+
+        $.ajax({
+            url: '@ViewBag.ApplicationURL/quotation/GetDetailQuotation?productId=' + productId + '&qty=' + qty,
+            type: 'GET',
+            success: function (data) {
+                productQuotation.push(data);
+
+                $('.table tbody').empty();
+                $('.table').append(renderTable(productQuotation));
+                $("#quotation-product-table").show();
+            },
+        });
+    }
+
+    function renderTable(data) {
+        var html = '<tbody>';
+        var total = 0;
+
+        for (var i = 0; i < data.length; i++) {
+            html += '<tr>';
+            html += '<td>' + data[i].sku + '</td>';
+            html += '<td>' + data[i].description + '</td>';
+            html += '<td>Q ' + parseFloat(data[i].price).toFixed(2) + '</td>';
+            html += '<td>' + data[i].qty + '</td>';
+            html += '<td>Q ' + parseFloat(data[i].subtotal).toFixed(2) + '</td>';
+            html += '<td>';
+            html += '<a href="#" onclick="removeProductQuotation(' + data[i].id + ')"><i class="fas fa-trash"></i></a>';
+            html += '</td>';
+            html += '</tr>';
+
+            total += data[i].subtotal;
+        }
+
+        html += '</tbody>';
+
+        $('#total-quotation').val("Q " + parseFloat(total).toFixed(2));
+        
+        return html;
+    }
+
+    function removeProductQuotation(productId) {
+        productQuotation = productQuotation.filter(function (item) {
+            return item.id !== productId;
+        });
+
+        $('.table tbody').empty();
+        $('.table').append(renderTable(productQuotation));
+
+        if (productQuotation.length === 0) {
+            $("#quotation-product-table").hide();
+        }
+    }
+
+    function editQuotation(event) {
+        event.preventDefault();
+
+        var quotation = {
+            Id: @Model.Id,
+            Serie: $('#input-serie-quotation').val(),
+            Total: parseFloat($('#total-quotation').val().replace('Q ', '')),
+            Client: {
+                Id: $('#select-client-quotation').val()
+            },
+            Detail: productQuotation
+        };
+
+        Notiflix.Loading.pulse('Editando Cotización');
+
+        $.ajax({
+            url: '@ViewBag.ApplicationURL/quotation/EditQuotation',
+            type: 'PUT',
+            contentType: 'application/json',
+            data: JSON.stringify(quotation),
+            success: function () {
+                Notiflix.Loading.remove();
+                Notiflix.Report.success('Cotización Actualizada', 'La cotización ha sido actualizada correctamente', 'Aceptar');
+
+                setTimeout(function () {
+                    window.location.href = '@ViewBag.ApplicationURL/quotation/ListQuotation';
+                }, 2000);
+            },
+            error: function (error) {
+                console.log(error);
+                Notiflix.Loading.remove();
+                Notiflix.Report.failure('Error', 'Ha ocurrido un error al actualizar la cotización', 'Aceptar');
+            }
+        });
+    }
+
+    function fillData(){
+        productQuotation = @Html.Raw(Json.Serialize(Model.Detail));
+
+        $('.table tbody').empty();
+        $('.table').append(renderTable(productQuotation));
+        $("#quotation-product-table").show();
+    }
+
+</script>
