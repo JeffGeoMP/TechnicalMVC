@@ -160,6 +160,11 @@ namespace TechnicalMVC.Controllers
             }
         }
 
+        /// <summary>
+        /// Update product.
+        /// </summary>
+        /// <param name="product"></param>
+        /// <returns></returns>
         [HttpPut]
         public async Task<IActionResult> EditProduct([FromBody] ProductViewModel product)
         {
